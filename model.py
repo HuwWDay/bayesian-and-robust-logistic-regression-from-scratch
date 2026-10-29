@@ -115,3 +115,21 @@ def load_iris_sepal():
 
     return X, y
 
+# Step 7 - sgd_logreg
+import numpy as np
+
+
+def sgd_logreg(X, y, lr, n_epochs, rng):
+    # TODO: From w = 0, for each epoch visit rng.permutation(N) and apply w -= lr * (mu_n - y_n) * x_n;
+    #       record logreg_nll after every epoch. Return (w, history array).
+    N, D = X.shape
+    w = np.zeros(D)
+    history = []
+    for epoch in range(n_epochs):
+        visit = rng.permutation(N)
+        for n in visit: 
+            mu_n = sigmoid(X[n] @ w)
+            w -= lr*(mu_n - y[n])*X[n]
+        history.append(logreg_nll(w, X, y))
+    return w, np.asarray(history)
+
