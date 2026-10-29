@@ -230,3 +230,35 @@ def make_ring_data(n, flip_prob, rng):
 
     return X, y
 
+# Step 11 - polynomial_features
+import numpy as np
+
+
+def polynomial_features(X, degree):
+    """Expand 2-D input into all 2D monomials up to total degree `degree`.
+
+    Parameters
+    ----------
+    X : np.ndarray of shape (N, 2)
+        Two-dimensional input features [x1, x2].
+    degree : int
+        Maximum polynomial degree K.
+
+    Returns
+    -------
+    Phi : np.ndarray of shape (N, M)
+        Expanded feature matrix where M = (degree + 1) * (degree + 2) // 2.
+        Columns are ordered by total degree d = 0..degree, and within degree d
+        by decreasing power i of x1 from d down to 0:
+        [1, x1, x2, x1^2, x1*x2, x2^2, ..., x2^K].
+    """
+    x1 = X[:, 0]
+    x2 = X[:, 1]
+    
+    out = []
+    for d in range(degree + 1):
+        for i in range(d, -1, -1):
+            out.append((x1 ** i) * (x2 ** (d - i)))
+            
+    return np.column_stack(out)
+

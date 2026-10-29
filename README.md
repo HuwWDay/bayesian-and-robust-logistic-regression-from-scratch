@@ -20,6 +20,7 @@ python scaffold.py
 - [x] **8.** irls_logreg
 - [x] **9.** fit_map_newton
 - [x] **10.** make_ring_data
+- [x] **11.** polynomial_features
 
 ---
 
