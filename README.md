@@ -23,6 +23,7 @@ python scaffold.py
 - [x] **11.** polynomial_features
 - [x] **12.** weight_decay_sweep
 - [x] **13.** softmax_loglik_grad
+- [x] **14.** bohning_bound
 
 ---
 

@@ -332,3 +332,13 @@ def softmax_loglik_grad(W, X, y, C):
 
     return ll, G
 
+# Step 14 - bohning_bound
+import numpy as np
+
+
+def bohning_bound(X, C):
+    # TODO: Return -0.5 * kron(I - 11^T / C, X^T X) with I and 1 of size C - 1.
+    K = C - 1
+    M = np.eye(K) - np.ones((K, K)) / C 
+    return -0.5 * np.kron(M, X.T @ X)
+
