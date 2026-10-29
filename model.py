@@ -276,3 +276,59 @@ def weight_decay_sweep(X_train, y_train, X_test, y_test, lams):
         test_err.append(np.mean((X_test @ w > 0) != (y_test == 1)))
     return np.asarray(train_err), np.asarray(test_err)
 
+# Step 13 - softmax_loglik_grad
+import numpy as np
+
+
+def softmax_loglik_grad(W, X, y, C):
+    """Compute multinomial log-likelihood and gradient with last class clamped to 0.
+
+    Parameters
+    ----------
+    W : np.ndarray of shape (C - 1, D)
+        Weight matrix for the first C - 1 free classes.
+    X : np.ndarray of shape (N, D)
+        Input design matrix.
+    y : np.ndarray of shape (N,)
+        Integer class labels in {0, ..., C - 1}.
+    C : int
+        Total number of classes.
+
+    Returns
+    -------
+    ll : float
+        Summed log-likelihood (scalar float).
+    G : np.ndarray of shape (C - 1, D)
+        Gradient of the log-likelihood with respect to W.
+    """
+    N, D = X.shape
+
+    # 1. Compute logits of shape (N, C) with class C - 1 fixed to 0
+    # X @ W.T has shape (N, C - 1); zeros column has shape (N, 1)
+    zeros = np.zeros((N, 1), dtype=float)
+    A = np.hstack([X @ W.T, zeros])  # (N, C)
+
+    # 2. Numerically stable Log-Sum-Exp along class axis (axis=1)
+    a_max = np.max(A, axis=1, keepdims=True)
+    exp_shifted = np.exp(A - a_max)
+    sum_exp = np.sum(exp_shifted, axis=1, keepdims=True)
+    lse = a_max.squeeze(axis=1) + np.log(sum_exp.squeeze(axis=1))
+
+    # Log-likelihood: sum_n (A[n, y[n]] - lse[n])
+    a_y = A[np.arange(N), y]
+    ll = float(np.sum(a_y - lse))
+
+    # 3. Softmax probabilities mu of shape (N, C)
+    mu = exp_shifted / sum_exp
+
+    # 4. One-hot indicator matrix Y of shape (N, C)
+    Y = np.zeros_like(A)
+    Y[np.arange(N), y] = 1.0
+
+    # Gradient for free classes c in {0, ..., C - 2}:
+    # G = (Y[:, :C-1] - mu[:, :C-1])^T @ X -> shape (C - 1, D)
+    diff = Y[:, :C - 1] - mu[:, :C - 1]
+    G = diff.T @ X
+
+    return ll, G
+
