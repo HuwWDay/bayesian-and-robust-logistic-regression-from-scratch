@@ -33,3 +33,14 @@ def sigmoid(a):
     
     return out
 
+# Step 2 - logreg_nll
+import numpy as np
+
+
+def logreg_nll(w, X, y):
+    # TODO: Compute the logits a = X @ w and return the mean of log(1 + exp(a)) - y * a as a float,
+    #       using a stable softplus.
+    a = X @ w 
+    out = np.logaddexp(0.0, a)- y*a
+    return float(out.mean())
+

@@ -11,6 +11,7 @@ python scaffold.py
 ## Steps
 
 - [x] **1.** sigmoid
+- [x] **2.** logreg_nll
 
 ---
 
