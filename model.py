@@ -66,3 +66,22 @@ def logreg_hessian(w, X):
     s = mu * (1-mu)
     return (X.T * s) @ X / N
 
+# Step 5 - numerical_gradient
+import numpy as np
+
+
+def numerical_gradient(f, w, eps=1e-5):
+    """Computes the numerical gradient of f at w using central differences.
+    
+    Works for scalars and NumPy arrays of arbitrary shape without mutating w.
+    """
+    w = np.asarray(w, dtype=float)
+    g = np.zeros_like(w)
+    
+    for i in range(w.size):
+        e = np.zeros_like(w)
+        e.flat[i] = eps
+        g.flat[i] = (f(w + e) - f(w - e)) / (2.0 * eps)
+        
+    return g
+
