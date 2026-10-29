@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bayesian and Robust Logistic Regression from Scratch — Built on Deep-ML</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #09090b;
+      --surface: #18181b;
+      --surface-alt: #27272a;
+      --border: #27272a;
+      --text: #fafafa;
+      --text-muted: #a1a1a6;
+      --accent: #fafafa;
+    }
+  }
+  :root {
+    --bg: #ffffff;
+    --surface: #fafafa;
+    --surface-alt: #f4f4f5;
+    --border: #e4e4e7;
+    --text: #18181b;
+    --text-muted: #71717a;
+    --accent: #18181b;
+    --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --sans: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    scroll-behavior: smooth;
+  }
+
+  .theme-toggle {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 100;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+  }
+  .theme-toggle:hover {
+    border-color: var(--text);
+  }
+  .theme-toggle svg {
+    width: 20px;
+    height: 20px;
+    stroke: var(--text);
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .hero {
+    position: relative;
+    min-height: 600px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: linear-gradient(135deg, var(--surface) 0%, var(--surface-alt) 100%);
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" /></filter><rect width="100" height="100" filter="url(%23noise)" opacity="0.05"/></svg>');
+    opacity: 0.3;
+    animation: drift 20s ease-in-out infinite;
+  }
+  @keyframes drift {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(10px, -10px); }
+  }
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    animation: fadeInUp 0.8s ease-out;
+  }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .hero h1 {
+    font-family: var(--mono);
+    font-size: 48px;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+
+  .wrap { max-width: 900px; margin: 0 auto; padding: 96px 24px; }
+
+  .section {
+    scroll-margin-top: 100px;
+    animation: fadeIn 0.6s ease-out;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  .section-title {
+    font-family: var(--mono);
+    font-size: 14px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 0 0 32px;
+    font-weight: 600;
+  }
+  .input-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 32px;
+    margin-bottom: 64px;
+  }
+  .output-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 32px;
+    margin-bottom: 96px;
+    min-height: 100px;
+  }
+
+  .how-section { margin-bottom: 96px; }
+  .part-reveal {
+    margin-bottom: 48px;
+    animation: slideInLeft 0.6s ease-out;
+  }
+  @keyframes slideInLeft {
+    from { opacity: 0; transform: translateX(-20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  .part-title {
+    font-family: var(--mono);
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 16px;
+    color: var(--text);
+  }
+  .part-description {
+    color: var(--text-muted);
+    margin-bottom: 24px;
+    line-height: 1.7;
+  }
+  .diagram-container {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 250px;
+  }
+  .diagram-container svg {
+    max-width: 100%;
+    height: auto;
+    color: var(--text);
+  }
+
+  .footer {
+    text-align: center;
+    padding-top: 48px;
+    border-top: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+  .footer a {
+    color: var(--text);
+    text-decoration: none;
+  }
+</style>
+</head>
+<body>
+  <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark mode">
+    <svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+  </button>
+
+  <section class="hero" id="hero">
+    <div class="hero-content">
+      <h1>Bayesian and Robust Logistic Regression from Scratch</h1>
+    </div>
+  </section>
+
+  <div class="wrap">
+    
+
+    <section class="section how-section" id="how-section">
+      <h2 class="section-title">How it was built</h2>
+      
+            <div class="part-reveal" style="opacity: 1">
+              <h3 class="part-title">Part 1: The Model, Its Loss and Its Curvature</h3>
+              <p class="part-description">Write the pieces every later fit is built from: a sigmoid that never overflows, the binary cross-entropy NLL computed from logits, its gradient and Hessian in matrix form, and a central finite-difference checker that proves the derivatives right before anything is trained on them.</p>
+              
+            </div>
+          
+            <div class="part-reveal" style="opacity: 0.6">
+              <h3 class="part-title">Part 2: Fitting Iris: SGD, IRLS and Weight Decay</h3>
+              <p class="part-description">Load the 1-D Iris problem (setosa vs versicolor by sepal length), race single-example SGD against iteratively reweighted least squares on its ill-conditioned loss surface, add an L2 penalty with a line-searched Newton solver, and watch weight decay rescue a degree-8 polynomial classifier on noisy ring-shaped data.</p>
+              
+            </div>
+          
+            <div class="part-reveal" style="opacity: 0.6">
+              <h3 class="part-title">Part 3: Softmax Regression by Bound Optimization</h3>
+              <p class="part-description">Extend the model to C classes with the last class&#39;s weights clamped to zero, derive the log-likelihood gradient, build Bohning&#39;s fixed lower bound on the Hessian, and fit all three Iris species with a minorize-maximize loop that inverts one matrix once and never lets the likelihood go down.</p>
+              
+            </div>
+          
+            <div class="part-reveal" style="opacity: 0.6">
+              <h3 class="part-title">Part 4: Bayesian Logistic Regression</h3>
+              <p class="part-description">On linearly separable data the MLE runs off to infinity. Put a Gaussian prior on the weights, fit the Laplace approximation to the posterior, compute the posterior predictive by Monte Carlo and by the probit approximation, score probabilities with log loss and expected calibration error, and run a 100-task study of plug-in versus Bayesian predictions with twenty labels each.</p>
+              
+            </div>
+          
+            <div class="part-reveal" style="opacity: 0.6">
+              <h3 class="part-title">Part 5: Robust Logistic Regression: A Mixture Likelihood</h3>
+              <p class="part-description">Corrupt labels on purpose, near the boundary and far from it, then make the likelihood itself robust: each label is either produced by the model or by a coin flip. Compute that mixture likelihood, the posterior probability that each label is clean, and fit weights and noise rate together by EM, recovering the clean Iris boundary from a contaminated sample.</p>
+              
+            </div>
+          
+            <div class="part-reveal" style="opacity: 0.6">
+              <h3 class="part-title">Part 6: Robust Logistic Regression: The Bi-Tempered Loss</h3>
+              <p class="part-description">Replace the log and the exponential by their tempered versions: a bounded cross-entropy (t1 &lt; 1) for outliers far from the boundary and a heavy-tailed softmax (t2 &gt; 1) for noise near it. Solve the tempered normalization by Algorithm 10.2, derive the loss gradient, check it numerically, and train linear classifiers on both kinds of label noise.</p>
+              
+            </div>
+          
+    </section>
+
+    <footer class="footer">
+      <p>Built by <strong>@HuwWDay</strong> on <a href="https://deep-ml.com" target="_blank">Deep-ML</a></p>
+    </footer>
+  </div>
+
+  <script>
+    function toggleTheme() {
+      const html = document.documentElement;
+      const isDark = html.style.colorScheme === 'dark';
+      html.style.colorScheme = isDark ? 'light' : 'dark';
+      localStorage.setItem('theme', isDark ? 'light' : 'dark');
+    }
+    function initTheme() {
+      const saved = localStorage.getItem('theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const isDark = saved === 'dark' || (saved === null && prefersDark);
+      document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
+    }
+    initTheme();
+    window.scrollToOutput = function() {
+      const output = document.getElementById('output-section');
+      output?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+  </script>
+</body>
+</html>
