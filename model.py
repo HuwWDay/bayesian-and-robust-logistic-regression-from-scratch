@@ -156,3 +156,41 @@ def irls_logreg(X, y, max_iter=50, tol=1e-10):
         w = w_new
     return w, np.asarray(history)
 
+# Step 9 - fit_map_newton
+import numpy as np
+
+
+def fit_map_newton(X, y, lam, max_iter=100, tol=1e-10):
+    """Find MAP weights under a Gaussian prior using Newton's method with backtracking.
+
+    Minimizes PNLL(w) = NLL(w) + lam * w^T w over all D dimensions.
+    """
+    N, D = X.shape
+    w = np.zeros(D, dtype=float)
+
+    def pnll(w_eval):
+        return logreg_nll(w_eval, X, y) + lam * np.dot(w_eval, w_eval)
+
+    I = np.eye(D)
+
+    for _ in range(max_iter):
+        g = logreg_grad(w, X, y) + 2.0 * lam * w
+        H = logreg_hessian(w, X) + 2.0 * lam * I
+
+        step = np.linalg.solve(H, g)
+
+        eta = 1.0
+        current_pnll = pnll(w)
+
+        # Backtracking line search
+        while pnll(w - eta * step) > current_pnll and eta > 1e-10:
+            eta /= 2.0
+
+        update = eta * step
+        w = w - update
+
+        if np.max(np.abs(update)) < tol:
+            break
+
+    return w
+

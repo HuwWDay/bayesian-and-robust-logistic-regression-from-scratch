@@ -18,6 +18,7 @@ python scaffold.py
 - [x] **6.** load_iris_sepal
 - [x] **7.** sgd_logreg
 - [x] **8.** irls_logreg
+- [x] **9.** fit_map_newton
 
 ---
 
