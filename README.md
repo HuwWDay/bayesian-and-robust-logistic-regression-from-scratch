@@ -12,6 +12,7 @@ python scaffold.py
 
 - [x] **1.** sigmoid
 - [x] **2.** logreg_nll
+- [x] **3.** logreg_grad
 
 ---
 

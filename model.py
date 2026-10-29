@@ -44,3 +44,13 @@ def logreg_nll(w, X, y):
     out = np.logaddexp(0.0, a)- y*a
     return float(out.mean())
 
+# Step 3 - logreg_grad
+import numpy as np
+
+
+def logreg_grad(w, X, y):
+    # TODO: Return X^T (sigmoid(X w) - y) / N.
+    N = y.shape
+    mu = sigmoid(X @ w)
+    return X.T @ (mu-y) / N
+
