@@ -194,3 +194,39 @@ def fit_map_newton(X, y, lam, max_iter=100, tol=1e-10):
 
     return w
 
+# Step 10 - make_ring_data
+import numpy as np
+
+
+def make_ring_data(n, flip_prob, rng):
+    """Generate a noisy two-class dataset with a circular decision boundary.
+
+    Parameters
+    ----------
+    n : int
+        Number of data points to generate.
+    flip_prob : float
+        Probability of flipping each label.
+    rng : np.random.Generator or np.random.RandomState
+        Random number generator.
+
+    Returns
+    -------
+    X : np.ndarray of shape (n, 2)
+        Feature matrix uniformly distributed in [-1, 1]^2.
+    y : np.ndarray of shape (n,)
+        Integer binary labels in {0, 1}.
+    """
+    # 1. Draw features uniformly on [-1, 1]^2
+    X = rng.uniform(-1.0, 1.0, size=(n, 2))
+
+    # 2. Clean labels: 1 inside x1^2 + x2^2 < 0.5, 0 outside
+    radius_sq = X[:, 0] ** 2 + X[:, 1] ** 2
+    y = (radius_sq < 0.5).astype(int)
+
+    # 3. Draw random uniforms once and flip where draw < flip_prob
+    flips = rng.random(n) < flip_prob
+    y[flips] = 1 - y[flips]
+
+    return X, y
+
