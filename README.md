@@ -17,6 +17,7 @@ python scaffold.py
 - [x] **5.** numerical_gradient
 - [x] **6.** load_iris_sepal
 - [x] **7.** sgd_logreg
+- [x] **8.** irls_logreg
 
 ---
 

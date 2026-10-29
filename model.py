@@ -133,3 +133,26 @@ def sgd_logreg(X, y, lr, n_epochs, rng):
         history.append(logreg_nll(w, X, y))
     return w, np.asarray(history)
 
+# Step 8 - irls_logreg
+import numpy as np
+
+
+def irls_logreg(X, y, max_iter=50, tol=1e-10):
+    # TODO: Algorithm 10.1. From w = 0, repeatedly form s = mu (1 - mu) and z = a + (y - mu) / s,
+    #       solve (X^T S X) w = X^T S z, record the NLL, stop when the update is below tol.
+    N, D = X.shape 
+    w = np.zeros(D)
+    history = [logreg_nll(w, X, y)]
+    for i in range(max_iter):
+        a = X @ w 
+        mu = sigmoid(a)
+        s = mu*(1-mu)
+        z = a + (y-mu)/s 
+        XtS = X.T *s
+        w_new = np.linalg.solve(XtS @ X, XtS @ z)
+        history.append(logreg_nll(w_new, X, y))
+        if max(abs(w_new-w)) < tol:
+            break 
+        w = w_new
+    return w, np.asarray(history)
+
