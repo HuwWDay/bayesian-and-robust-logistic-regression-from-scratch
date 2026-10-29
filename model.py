@@ -262,3 +262,17 @@ def polynomial_features(X, degree):
             
     return np.column_stack(out)
 
+# Step 12 - weight_decay_sweep
+import numpy as np
+
+
+def weight_decay_sweep(X_train, y_train, X_test, y_test, lams):
+    # TODO: For each lam fit fit_map_newton on the training set and record the train and test
+    #       misclassification rates (predict 1 when X @ w > 0). Return two arrays.
+    train_err, test_err = [], []
+    for lam in lams:
+        w = fit_map_newton(X_train, y_train, lam)
+        train_err.append(np.mean((X_train @ w > 0) != (y_train == 1)))
+        test_err.append(np.mean((X_test @ w > 0) != (y_test == 1)))
+    return np.asarray(train_err), np.asarray(test_err)
+

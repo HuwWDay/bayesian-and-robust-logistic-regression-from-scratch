@@ -21,6 +21,7 @@ python scaffold.py
 - [x] **9.** fit_map_newton
 - [x] **10.** make_ring_data
 - [x] **11.** polynomial_features
+- [x] **12.** weight_decay_sweep
 
 ---
 
