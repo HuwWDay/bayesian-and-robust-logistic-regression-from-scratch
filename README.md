@@ -24,6 +24,7 @@ python scaffold.py
 - [x] **12.** weight_decay_sweep
 - [x] **13.** softmax_loglik_grad
 - [x] **14.** bohning_bound
+- [x] **15.** fit_softmax_mm
 
 ---
 

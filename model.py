@@ -342,3 +342,58 @@ def bohning_bound(X, C):
     M = np.eye(K) - np.ones((K, K)) / C 
     return -0.5 * np.kron(M, X.T @ X)
 
+# Step 15 - fit_softmax_mm
+import numpy as np
+
+
+def fit_softmax_mm(X, y, C, n_iter):
+    """Fit multiclass softmax regression using Böhning-bound Minorize-Maximize (MM).
+
+    Parameters
+    ----------
+    X : np.ndarray of shape (N, D)
+        Design matrix.
+    y : np.ndarray of shape (N,)
+        Integer labels in {0, ..., C - 1}.
+    C : int
+        Total number of classes.
+    n_iter : int
+        Number of MM iterations to perform.
+
+    Returns
+    -------
+    W : np.ndarray of shape (C - 1, D)
+        Learned weight matrix for the first C - 1 free classes.
+    history : np.ndarray of shape (n_iter + 1,)
+        Summed log-likelihood at initialization and after each iteration.
+    """
+    N, D = X.shape
+    W = np.zeros((C - 1, D), dtype=float)
+
+    # Precompute B^{-1} once outside the optimization loop
+    B = bohning_bound(X, C)
+    B_inv = np.linalg.inv(B)
+
+    # Initial log-likelihood
+    init_ll, _ = softmax_loglik_grad(W, X, y, C)
+    history = [init_ll]
+
+    for _ in range(n_iter):
+        ll, G = softmax_loglik_grad(W, X, y, C)
+
+        # Class-major flattening (row-major order: class 0, then class 1, etc.)
+        w = W.reshape(-1)
+        g = G.reshape(-1)
+
+        # MM update: w <- w - B^{-1} g(w)
+        w = w - B_inv @ g
+
+        # Reshape back to (C - 1, D)
+        W = w.reshape(C - 1, D)
+
+        # Record log-likelihood after the step
+        step_ll, _ = softmax_loglik_grad(W, X, y, C)
+        history.append(step_ll)
+
+    return W, np.asarray(history)
+
