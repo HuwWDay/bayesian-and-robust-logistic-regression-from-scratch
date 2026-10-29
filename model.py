@@ -54,3 +54,15 @@ def logreg_grad(w, X, y):
     mu = sigmoid(X @ w)
     return X.T @ (mu-y) / N
 
+# Step 4 - logreg_hessian
+import numpy as np
+
+
+def logreg_hessian(w, X):
+    # TODO: Return X^T S X / N with S = diag(mu * (1 - mu)) and mu = sigmoid(X w),
+    #       without forming the N x N matrix.
+    N, _ = X.shape
+    mu = sigmoid(X @ w)
+    s = mu * (1-mu)
+    return (X.T * s) @ X / N
+
