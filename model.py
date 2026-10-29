@@ -85,3 +85,33 @@ def numerical_gradient(f, w, eps=1e-5):
         
     return g
 
+# Step 6 - load_iris_sepal
+import numpy as np
+
+SETOSA_SEPAL_LENGTH = (
+    "5.1 4.9 4.7 4.6 5.0 5.4 4.6 5.0 4.4 4.9 5.4 4.8 4.8 4.3 5.8 5.7 5.4 5.1 5.7 5.1 5.4 5.1 4.6 5.1 4.8 "
+    "5.0 5.0 5.2 5.2 4.7 4.8 5.4 5.2 5.5 4.9 5.0 5.5 4.9 4.4 5.1 5.0 4.5 4.4 5.0 5.1 4.8 5.1 4.6 5.3 5.0"
+)
+VERSICOLOR_SEPAL_LENGTH = (
+    "7.0 6.4 6.9 5.5 6.5 5.7 6.3 4.9 6.6 5.2 5.0 5.9 6.0 6.1 5.6 6.7 5.6 5.8 6.2 5.6 5.9 6.1 6.3 6.1 6.4 "
+    "6.6 6.8 6.7 6.0 5.7 5.5 5.5 5.8 6.0 5.4 6.0 6.7 6.3 5.6 5.5 5.5 6.1 5.8 5.0 5.6 5.7 5.7 6.2 5.1 5.7"
+)
+VIRGINICA_SEPAL_LENGTH = (
+    "6.3 5.8 7.1 6.3 6.5 7.6 4.9 7.3 6.7 7.2 6.5 6.4 6.8 5.7 5.8 6.4 6.5 7.7 7.7 6.0 6.9 5.6 7.7 6.3 6.7 "
+    "7.2 6.2 6.1 6.4 7.2 7.4 7.9 6.4 6.3 6.1 7.7 6.3 6.4 6.0 6.9 6.7 6.9 5.8 6.8 6.7 6.7 6.3 6.5 6.2 5.9"
+)
+
+
+def load_iris_sepal():
+    setosa = np.array(SETOSA_SEPAL_LENGTH.split(), dtype=float)
+    versicolor = np.array(VERSICOLOR_SEPAL_LENGTH.split(), dtype=float)
+    virginica = np.array(VIRGINICA_SEPAL_LENGTH.split(), dtype=float)
+
+    lengths = np.concatenate([setosa, versicolor, virginica])
+    ones = np.ones_like(lengths)
+
+    X = np.column_stack([ones, lengths])
+    y = np.repeat(np.arange(3), 50)
+
+    return X, y
+
