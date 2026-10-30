@@ -397,3 +397,41 @@ def fit_softmax_mm(X, y, C, n_iter):
 
     return W, np.asarray(history)
 
+# Step 16 - make_separable_data
+import numpy as np
+
+
+def make_separable_data(n, margin, rng):
+    """Generate 2-D data linearly separable through the origin by a given margin.
+
+    Parameters
+    ----------
+    n : int
+        Number of points to generate.
+    margin : float
+        Separation margin along unit normal u.
+    rng : np.random.Generator or np.random.RandomState
+        Random number generator.
+
+    Returns
+    -------
+    X : np.ndarray of shape (n, 2)
+        Point coordinates shifted to ensure separation.
+    y : np.ndarray of shape (n,)
+        Integer labels in {0, 1}.
+    """
+    # 1. Draw points from N(0, 2^2 I)
+    X = rng.normal(0.0, 2.0, size=(n, 2))
+
+    # 2. Fixed unit normal direction
+    u = np.array([2.0, 1.0]) / np.sqrt(5.0)
+
+    # 3. Label: 1 where X @ u > 0, else 0
+    y = (X @ u > 0).astype(int)
+
+    # 4. Push points away along normal u: +margin * u for y=1, -margin * u for y=0
+    signs = 2 * y - 1  # maps 0 -> -1 and 1 -> +1
+    X = X + margin * np.outer(signs, u)
+
+    return X, y
+
