@@ -26,6 +26,7 @@ python scaffold.py
 - [x] **14.** bohning_bound
 - [x] **15.** fit_softmax_mm
 - [x] **16.** make_separable_data
+- [x] **17.** laplace_posterior
 
 ---
 

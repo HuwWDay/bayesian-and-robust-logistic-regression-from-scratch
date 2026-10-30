@@ -435,3 +435,44 @@ def make_separable_data(n, margin, rng):
 
     return X, y
 
+# Step 17 - laplace_posterior
+import numpy as np
+
+
+def laplace_posterior(X, y, prior_var):
+    """Approximate the weight posterior by a Gaussian at the MAP estimate.
+
+    Parameters
+    ----------
+    X : np.ndarray of shape (N, D)
+        Design matrix.
+    y : np.ndarray of shape (N,)
+        Binary labels in {0, 1}.
+    prior_var : float
+        Prior variance sigma^2 in p(w) = N(w | 0, sigma^2 * I).
+
+    Returns
+    -------
+    w_map : np.ndarray of shape (D,)
+        MAP weight estimate.
+    Sigma : np.ndarray of shape (D, D)
+        Posterior covariance matrix (inverse Hessian of negative log posterior).
+    """
+    N, D = X.shape
+
+    # 1. Compute MAP estimate via Newton's method
+    # Since fit_map_newton minimizes: NLL(w) + lam * ||w||^2 where NLL is the average over N,
+    # the summed objective: sum_n -log p(y_n | x_n, w) + ||w||^2 / (2 * prior_var)
+    # equals: N * [NLL(w) + lam * ||w||^2] with lam = 1 / (2 * N * prior_var).
+    lam = 1.0 / (2.0 * N * prior_var)
+    w_map = fit_map_newton(X, y, lam)
+
+    # 2. Compute posterior covariance Sigma = H^{-1}
+    # logreg_hessian returns the sample-averaged Hessian (1/N) * X^T S X.
+    # The Hessian of the summed negative log posterior is:
+    # H = N * logreg_hessian(w_map, X) + (1 / prior_var) * I
+    H_sum = N * logreg_hessian(w_map, X) + (1.0 / prior_var) * np.eye(D)
+    Sigma = np.linalg.inv(H_sum)
+
+    return w_map, Sigma
+
