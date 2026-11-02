@@ -945,3 +945,17 @@ def bi_tempered_grad(y, A, t1, t2):
     # 5. Divide by N because loss is the mean over examples
     return grad / N
 
+# Step 30 - fit_bi_tempered
+import numpy as np
+
+
+def fit_bi_tempered(X, y, C, t1, t2, lr, n_iter):
+    # TODO: From W = 0 (shape (C, D)), repeat W -= lr * bi_tempered_grad(y, X @ W.T, t1, t2).T @ X.
+    N, D = X.shape
+    W = np.zeros((C, D))
+
+    for n in range(n_iter):
+        G = bi_tempered_grad(y, X @ W.T, t1, t2)
+        W -= lr*G.T @ X 
+    return W
+
