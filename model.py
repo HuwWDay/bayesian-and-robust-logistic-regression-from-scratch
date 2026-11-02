@@ -700,3 +700,14 @@ def mixture_nll(w, pi, X, y):
     p = 0.5* pi + (1-pi)*q
     return float(-np.mean(np.log(p)))
 
+# Step 24 - clean_responsibility
+import numpy as np
+
+
+def clean_responsibility(w, pi, X, y):
+    # TODO: Return (1 - pi) q / (pi / 2 + (1 - pi) q), q = model probability of the observed label.
+    mu = sigmoid(X @ w)
+    q = np.where(y==1, mu, 1-mu)
+    p = 0.5*pi + (1-pi)*q
+    return (1-pi)*q / (pi/2 + (1-pi)*q)
+

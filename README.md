@@ -33,6 +33,7 @@ python scaffold.py
 - [x] **21.** small_data_study
 - [x] **22.** inject_label_noise
 - [x] **23.** mixture_nll
+- [x] **24.** clean_responsibility
 
 ---
 
