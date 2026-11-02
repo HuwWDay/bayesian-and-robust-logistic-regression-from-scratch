@@ -847,3 +847,48 @@ def tempered_softmax(A, t, n_iter=100, tol=1e-12):
 
     return exp_t(A - lam, t)
 
+# Step 28 - bi_tempered_loss
+import numpy as np
+
+
+def bi_tempered_loss(y, A, t1, t2):
+    """Compute the bi-tempered logistic loss.
+
+    Parameters
+    ----------
+    y : np.ndarray of shape (N,)
+        Ground-truth integer labels in {0, ..., C - 1}.
+    A : np.ndarray of shape (N, C)
+        Logits matrix.
+    t1 : float
+        Temperature parameter for the logarithm / normalization term.
+    t2 : float
+        Temperature parameter for the tempered softmax probabilities.
+
+    Returns
+    -------
+    float
+        Mean bi-tempered loss over the N examples.
+    """
+    y = np.asarray(y)
+    A = np.asarray(A, dtype=float)
+    N = A.shape[0]
+
+    # 1. Compute tempered probabilities P of shape (N, C)
+    P = tempered_softmax(A, t2)
+
+    # 2. Extract probability assigned to the true class for each example
+    p_true = P[np.arange(N), y]
+
+    # 3. First term: -log_t1(P[n, y_n])
+    term1 = -log_t(p_true, t1)
+
+    # 4. Second term: (1 - sum_c P[n, c]^(2 - t1)) / (2 - t1)
+    sum_p_pow = np.sum(P ** (2.0 - t1), axis=1)
+    term2 = (1.0 - sum_p_pow) / (2.0 - t1)
+
+    # Combined loss per example: L_n = term1 - term2
+    losses = term1 - term2
+
+    return float(np.mean(losses))
+
