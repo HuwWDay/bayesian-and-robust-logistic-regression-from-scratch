@@ -29,6 +29,7 @@ python scaffold.py
 - [x] **17.** laplace_posterior
 - [x] **18.** predictive_mc
 - [x] **19.** predictive_probit
+- [x] **20.** calibration_metrics
 
 ---
 

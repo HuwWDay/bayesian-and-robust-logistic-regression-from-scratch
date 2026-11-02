@@ -500,3 +500,52 @@ def predictive_probit(X_test, w_map, Sigma):
     v = np.einsum("nd,de,ne->n", X_test, Sigma, X_test)
     return sigmoid(m / np.sqrt(1+np.pi*v/8))
 
+# Step 20 - calibration_metrics
+import numpy as np
+
+
+def calibration_metrics(p, y, n_bins=10):
+    """Compute mean log loss (NLL) and Expected Calibration Error (ECE).
+
+    Parameters
+    ----------
+    p : np.ndarray of shape (M,)
+        Predicted probabilities for class 1.
+    y : np.ndarray of shape (M,)
+        Binary ground-truth labels in {0, 1}.
+    n_bins : int, default=10
+        Number of equal-width bins on [0, 1].
+
+    Returns
+    -------
+    nll : float
+        Mean negative log-likelihood (binary cross-entropy).
+    ece : float
+        Expected Calibration Error over non-empty bins.
+    """
+    p = np.asarray(p, dtype=float)
+    y = np.asarray(y, dtype=float)
+    M = p.size
+
+    # 1. Clip predictions to avoid log(0)
+    p = np.clip(p, 1e-12, 1.0 - 1e-12)
+
+    # 2. Mean negative log-likelihood (binary cross-entropy)
+    nll = -np.mean(y * np.log(p) + (1.0 - y) * np.log(1.0 - p))
+
+    # 3. Bin assignments: b = min(floor(p * n_bins), n_bins - 1)
+    # Using np.clip keeps the last bin [..., 1.0] closed at 1.0
+    bin_indices = np.clip(np.floor(p * n_bins).astype(int), 0, n_bins - 1)
+
+    # 4. Expected Calibration Error (ECE)
+    ece = 0.0
+    for b in range(n_bins):
+        mask = bin_indices == b
+        count = np.sum(mask)
+        if count > 0:
+            p_bin_mean = np.mean(p[mask])
+            y_bin_mean = np.mean(y[mask])
+            ece += (count / M) * np.abs(y_bin_mean - p_bin_mean)
+
+    return float(nll), float(ece)
+
