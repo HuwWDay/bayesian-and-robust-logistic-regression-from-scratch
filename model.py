@@ -688,3 +688,15 @@ def inject_label_noise(X, y, w_ref, n_flip, mode):
 
     return y_noisy
 
+# Step 23 - mixture_nll
+import numpy as np
+
+
+def mixture_nll(w, pi, X, y):
+    # TODO: q_n = probability the logistic model gives the observed label; p_n = pi / 2 + (1 - pi) q_n;
+    #       return -mean(log p_n) as a float.
+    mu = sigmoid(X @ w)
+    q = np.where(y==1, mu, 1-mu)
+    p = 0.5* pi + (1-pi)*q
+    return float(-np.mean(np.log(p)))
+
