@@ -639,3 +639,52 @@ def small_data_study(
         for method, vals in scores.items()
     }
 
+# Step 22 - inject_label_noise
+import numpy as np
+
+
+def inject_label_noise(X, y, w_ref, n_flip, mode):
+    """Flip labels either near the boundary or deep inside class 0.
+
+    Parameters
+    ----------
+    X : np.ndarray of shape (N, D)
+        Input features.
+    y : np.ndarray of shape (N,)
+        Binary labels in {0, 1}.
+    w_ref : np.ndarray of shape (D,)
+        Reference weight vector defining margins m = X @ w_ref.
+    n_flip : int
+        Number of labels to flip.
+    mode : {"near", "far"}
+        - "near": flip the n_flip points with the smallest |m|.
+        - "far": flip the n_flip class-0 points with the most negative m.
+
+    Returns
+    -------
+    y_noisy : np.ndarray of shape (N,)
+        New array with flipped labels. Does not modify the input y.
+    """
+    if mode not in ("near", "far"):
+        raise ValueError(f"Unknown mode: {mode!r}. Expected 'near' or 'far'.")
+
+    # Copy to avoid modifying the input array
+    y_noisy = np.array(y, copy=True)
+    m = X @ w_ref
+
+    if mode == "near":
+        # Smallest abs(m) regardless of class
+        sorted_indices = np.argsort(np.abs(m), kind="stable")
+        flip_indices = sorted_indices[:n_flip]
+        y_noisy[flip_indices] = 1 - y_noisy[flip_indices]
+
+    elif mode == "far":
+        # Among points with y == 0, find those with the most negative m
+        class_0_indices = np.flatnonzero(y == 0)
+        # Sort class-0 points by increasing m (most negative first)
+        sorted_order = np.argsort(m[class_0_indices], kind="stable")
+        flip_indices = class_0_indices[sorted_order[:n_flip]]
+        y_noisy[flip_indices] = 1
+
+    return y_noisy
+
