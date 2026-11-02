@@ -38,6 +38,7 @@ python scaffold.py
 - [x] **26.** log_t
 - [x] **27.** tempered_softmax
 - [x] **28.** bi_tempered_loss
+- [x] **29.** bi_tempered_grad
 
 ---
 

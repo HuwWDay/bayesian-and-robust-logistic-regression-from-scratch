@@ -892,3 +892,56 @@ def bi_tempered_loss(y, A, t1, t2):
 
     return float(np.mean(losses))
 
+# Step 29 - bi_tempered_grad
+import numpy as np
+
+
+def bi_tempered_grad(y, A, t1, t2):
+    """Compute the gradient of the mean bi-tempered logistic loss with respect to logits A.
+
+    Parameters
+    ----------
+    y : np.ndarray of shape (N,)
+        Ground-truth integer labels in {0, ..., C - 1}.
+    A : np.ndarray of shape (N, C)
+        Logits matrix.
+    t1 : float
+        Temperature parameter for the logarithm/loss term.
+    t2 : float
+        Temperature parameter for the tempered softmax probabilities.
+
+    Returns
+    -------
+    grad : np.ndarray of shape (N, C)
+        Gradient d(mean L) / dA.
+    """
+    y = np.asarray(y)
+    A = np.asarray(A, dtype=float)
+    N, C = A.shape
+
+    # 1. Compute tempered probabilities P of shape (N, C)
+    P = tempered_softmax(A, t2)
+
+    # 2. Compute v_j = (dL / dP_j) * P_j^t2
+    # For j != c: v_j = P_j^(1 - t1) * P_j^t2 = P_j^(1 - t1 + t2)
+    v = P ** (1.0 - t1 + t2)
+
+    # For the true class c:
+    # v_c = P_c^(1 - t1 + t2) - P_c^(t2 - t1)
+    # Computed directly without evaluating P_c^(-t1) independently
+    rows = np.arange(N)
+    p_c = P[rows, y]
+    v[rows, y] = (p_c ** (1.0 - t1 + t2)) - (p_c ** (t2 - t1))
+
+    # 3. Compute q_k = P_k^t2 / sum_k' P_k'^t2
+    P_t2 = P ** t2
+    sum_P_t2 = np.sum(P_t2, axis=1, keepdims=True)
+    q = P_t2 / sum_P_t2
+
+    # 4. Gradient per example: dL / dA_k = v_k - q_k * sum_j v_j
+    sum_v = np.sum(v, axis=1, keepdims=True)
+    grad = v - q * sum_v
+
+    # 5. Divide by N because loss is the mean over examples
+    return grad / N
+
