@@ -30,6 +30,7 @@ python scaffold.py
 - [x] **18.** predictive_mc
 - [x] **19.** predictive_probit
 - [x] **20.** calibration_metrics
+- [x] **21.** small_data_study
 
 ---
 

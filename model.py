@@ -549,3 +549,93 @@ def calibration_metrics(p, y, n_bins=10):
 
     return float(nll), float(ece)
 
+# Step 21 - small_data_study
+import numpy as np
+
+
+def small_data_study(
+    n_tasks,
+    n_train,
+    dim,
+    true_var,
+    prior_var,
+    rng,
+    n_test=200,
+    n_samples=1000,
+):
+    """Compare plug-in, probit, and Monte Carlo predictive distributions across random tasks.
+
+    Parameters
+    ----------
+    n_tasks : int
+        Number of independent synthetic tasks to simulate.
+    n_train : int
+        Number of training examples per task.
+    dim : int
+        Feature dimensionality D.
+    true_var : float
+        Variance of the true weight vector.
+    prior_var : float
+        Prior variance sigma^2 passed to the Laplace posterior.
+    rng : np.random.Generator or np.random.RandomState
+        Random number generator.
+    n_test : int, default=200
+        Number of test examples per task.
+    n_samples : int, default=1000
+        Number of Monte Carlo weight samples for predictive_mc.
+
+    Returns
+    -------
+    dict
+        Mapping {"plugin": (mean_nll, mean_ece), "probit": (...), "mc": (...)}.
+    """
+    scores = {
+        "plugin": {"nll": [], "ece": []},
+        "probit": {"nll": [], "ece": []},
+        "mc": {"nll": [], "ece": []},
+    }
+
+    std_true = np.sqrt(true_var)
+
+    for _ in range(n_tasks):
+        # 1. w_true drawn first
+        w_true = rng.normal(0.0, std_true, size=dim)
+
+        # 2. X drawn second
+        X = rng.normal(size=(n_train + n_test, dim))
+
+        # 3. y drawn third
+        y = (rng.random(n_train + n_test) < sigmoid(X @ w_true)).astype(int)
+
+        # 4. Split train / test
+        X_train, X_test = X[:n_train], X[n_train:]
+        y_train, y_test = y[:n_train], y[n_train:]
+
+        # 5. Fit Laplace approximation at MAP
+        w_map, Sigma = laplace_posterior(X_train, y_train, prior_var)
+
+        # 6. Predictions in exact order: plugin, probit, mc
+        p_plugin = sigmoid(X_test @ w_map)
+        p_probit = predictive_probit(X_test, w_map, Sigma)
+        p_mc = predictive_mc(X_test, w_map, Sigma, n_samples, rng)
+
+        # 7. Evaluate calibration metrics
+        preds = {
+            "plugin": p_plugin,
+            "probit": p_probit,
+            "mc": p_mc,
+        }
+
+        for method, p in preds.items():
+            nll, ece = calibration_metrics(p, y_test)
+            scores[method]["nll"].append(nll)
+            scores[method]["ece"].append(ece)
+
+    return {
+        method: (
+            float(np.mean(vals["nll"])),
+            float(np.mean(vals["ece"])),
+        )
+        for method, vals in scores.items()
+    }
+
