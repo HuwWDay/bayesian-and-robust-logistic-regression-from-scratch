@@ -795,3 +795,55 @@ def exp_t(x, t):
     else: 
         return np.maximum(1+(1-t)*x, 0.0)**(1/(1-t))
 
+# Step 27 - tempered_softmax
+import numpy as np
+
+
+def tempered_softmax(A, t, n_iter=100, tol=1e-12):
+    """Normalize logits using the tempered exponential via Algorithm 10.2.
+
+    Parameters
+    ----------
+    A : np.ndarray of shape (N, C) or (C,)
+        Logits matrix or vector.
+    t : float
+        Temperature parameter (t >= 1.0).
+    n_iter : int, default=100
+        Maximum number of fixed-point iterations.
+    tol : float, default=1e-12
+        Convergence tolerance on max(abs(a_new - a)).
+
+    Returns
+    -------
+    y_hat : np.ndarray of shape (N, C)
+        Tempered softmax probabilities summing to 1 across classes.
+    """
+    A = np.atleast_2d(np.asarray(A, dtype=float))
+
+    # Standard softmax when t == 1.0
+    if t == 1.0:
+        a_max = np.max(A, axis=-1, keepdims=True)
+        exp_a = np.exp(A - a_max)
+        return exp_a / np.sum(exp_a, axis=-1, keepdims=True)
+
+    # 1. Row-max shift
+    mu = np.max(A, axis=-1, keepdims=True)
+    a0 = A - mu
+    a = np.copy(a0)
+
+    # 2. Fixed-point iteration: a <- Z^(1 - t) * a0
+    for _ in range(n_iter):
+        Z = np.sum(exp_t(a, t), axis=-1, keepdims=True)
+        a_new = (Z ** (1.0 - t)) * a0
+
+        if np.max(np.abs(a_new - a)) < tol:
+            a = a_new
+            break
+        a = a_new
+
+    # 3. Final normalization parameter lambda_t(a)
+    Z = np.sum(exp_t(a, t), axis=-1, keepdims=True)
+    lam = -log_t(1.0 / Z, t) + mu
+
+    return exp_t(A - lam, t)
+

@@ -36,6 +36,7 @@ python scaffold.py
 - [x] **24.** clean_responsibility
 - [x] **25.** fit_robust_logreg
 - [x] **26.** log_t
+- [x] **27.** tempered_softmax
 
 ---
 
