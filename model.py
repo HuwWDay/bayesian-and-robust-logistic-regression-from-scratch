@@ -774,3 +774,24 @@ def fit_robust_logreg(X, y, lam, n_iter=100, pi0=0.1, n_newton=3):
 
     return w, pi, np.asarray(history)
 
+# Step 26 - log_t
+import numpy as np
+
+
+def log_t(x, t):
+    # TODO: (x^(1 - t) - 1) / (1 - t), and np.log(x) when t == 1.0.
+    x = np.asarray(x)
+    if t == 1.0:
+        return np.log(x)
+    else:
+        return (x**(1-t)-1)/(1-t)
+
+
+def exp_t(x, t):
+    # TODO: max(1 + (1 - t) x, 0)^(1 / (1 - t)), and np.exp(x) when t == 1.0.
+    x = np.asarray(x)
+    if t == 1.0:
+        return np.exp(x)
+    else: 
+        return np.maximum(1+(1-t)*x, 0.0)**(1/(1-t))
+
