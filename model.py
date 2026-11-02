@@ -490,3 +490,13 @@ def predictive_mc(X_test, w_map, Sigma, n_samples, rng):
     out = X_test @ Ws.T 
     return np.mean(sigmoid(out), axis=1)
 
+# Step 19 - predictive_probit
+import numpy as np
+
+
+def predictive_probit(X_test, w_map, Sigma):
+    # TODO: m = X w_map, v = x^T Sigma x per row, kappa = (1 + pi v / 8)^(-1/2); return sigmoid(kappa m).
+    m = X_test @ w_map
+    v = np.einsum("nd,de,ne->n", X_test, Sigma, X_test)
+    return sigmoid(m / np.sqrt(1+np.pi*v/8))
+
