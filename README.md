@@ -34,6 +34,7 @@ python scaffold.py
 - [x] **22.** inject_label_noise
 - [x] **23.** mixture_nll
 - [x] **24.** clean_responsibility
+- [x] **25.** fit_robust_logreg
 
 ---
 

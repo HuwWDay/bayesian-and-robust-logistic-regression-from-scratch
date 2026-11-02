@@ -711,3 +711,66 @@ def clean_responsibility(w, pi, X, y):
     p = 0.5*pi + (1-pi)*q
     return (1-pi)*q / (pi/2 + (1-pi)*q)
 
+# Step 25 - fit_robust_logreg
+import numpy as np
+
+
+def fit_robust_logreg(X, y, lam, n_iter=100, pi0=0.1, n_newton=3):
+    """Fit robust logistic regression weights and noise rate via Expectation-Maximization (EM).
+
+    Assumes column 0 of X is the intercept/bias term (not regularized).
+
+    Parameters
+    ----------
+    X : np.ndarray of shape (N, D)
+        Design matrix where column 0 is the bias feature.
+    y : np.ndarray of shape (N,)
+        Binary labels in {0, 1}.
+    lam : float
+        L2 regularization parameter on non-bias weights w[1:].
+    n_iter : int, default=100
+        Number of outer EM iterations.
+    pi0 : float, default=0.1
+        Initial guess for the noise rate pi.
+    n_newton : int, default=3
+        Number of Newton steps per M-step on w.
+
+    Returns
+    -------
+    w : np.ndarray of shape (D,)
+        Fitted weight vector.
+    pi : float
+        Fitted label noise rate.
+    history : np.ndarray of shape (n_iter,)
+        Penalized mixture NLL recorded after each EM iteration.
+    """
+    N, D = X.shape
+    w = np.zeros(D, dtype=float)
+    pi = float(pi0)
+
+    # Regularization projection matrix: identity with P[0, 0] = 0 (bias unpenalized)
+    P = np.eye(D)
+    P[0, 0] = 0.0
+
+    history = []
+
+    for _ in range(n_iter):
+        # 1. E-step: calculate clean responsibilities r_n = P(clean | x_n, y_n)
+        r = clean_responsibility(w, pi, X, y)
+
+        # 2. M-step for pi: update noise rate
+        pi = float(1.0 - np.mean(r))
+
+        # 3. M-step for w: n_newton Newton steps
+        for _ in range(n_newton):
+            mu = sigmoid(X @ w)
+            g = (X.T @ (r * (mu - y))) / N + 2.0 * lam * (P @ w)
+            H = ((X.T * (r * mu * (1.0 - mu))) @ X) / N + 2.0 * lam * P
+            w = w - np.linalg.solve(H, g)
+
+        # 4. Record penalized mixture negative log-likelihood
+        penalized_nll = mixture_nll(w, pi, X, y) + lam * np.dot(w[1:], w[1:])
+        history.append(penalized_nll)
+
+    return w, pi, np.asarray(history)
+
