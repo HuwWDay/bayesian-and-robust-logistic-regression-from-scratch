@@ -476,3 +476,17 @@ def laplace_posterior(X, y, prior_var):
 
     return w_map, Sigma
 
+# Step 18 - predictive_mc
+import numpy as np
+
+
+def predictive_mc(X_test, w_map, Sigma, n_samples, rng):
+    # TODO: L = cholesky(Sigma); Z = rng.standard_normal((n_samples, D)); Ws = w_map + Z @ L.T;
+    #       return the mean over samples of sigmoid(X_test @ Ws.T), shape (M,).
+    M, D = X_test.shape
+    L = np.linalg.cholesky(Sigma)
+    Z = rng.standard_normal((n_samples, D))
+    Ws = w_map + Z @ L.T
+    out = X_test @ Ws.T 
+    return np.mean(sigmoid(out), axis=1)
+
